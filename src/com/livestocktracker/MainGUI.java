@@ -13,6 +13,7 @@ public class MainGUI extends JFrame {
         ReportFormPanel formPanel = new ReportFormPanel();
         ReportsPanel reportsPanel = new ReportsPanel();
         DashboardPanel dashboardPanel = new DashboardPanel();
+        GuidancePanel guidancePanel = new GuidancePanel();
         formPanel.setOnSaved(() -> {
             reportsPanel.refresh();
             dashboardPanel.refresh();
@@ -22,7 +23,7 @@ public class MainGUI extends JFrame {
         tabs.addTab("Record a Report", formPanel);
         tabs.addTab("Manage Reports", reportsPanel);
         tabs.addTab("Dashboard", dashboardPanel);
-        tabs.addTab("Disease Guidance", placeholder("Disease guidance goes here"));
+        tabs.addTab("Disease Guidance", guidancePanel);
         tabs.addChangeListener(e -> {
             if (tabs.getSelectedComponent() == reportsPanel) reportsPanel.refresh();
             if (tabs.getSelectedComponent() == dashboardPanel) dashboardPanel.refresh();
@@ -30,11 +31,5 @@ public class MainGUI extends JFrame {
 
         add(tabs);
         setVisible(true);
-    }
-
-    private JPanel placeholder(String text) {
-        JPanel panel = new JPanel();
-        panel.add(new JLabel(text));
-        return panel;
     }
 }

@@ -10,15 +10,26 @@ public class MainGUI extends JFrame {
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
 
+        ReportFormPanel formPanel = new ReportFormPanel();
+        ReportsPanel reportsPanel = new ReportsPanel();
+        DashboardPanel dashboardPanel = new DashboardPanel();
+        formPanel.setOnSaved(() -> {
+            reportsPanel.refresh();
+            dashboardPanel.refresh();
+        });
+
         JTabbedPane tabs = new JTabbedPane();
-        tabs.addTab("Record a Report", new ReportFormPanel());
-        tabs.addTab("Manage Reports", placeholder("Reports table goes here"));
-        tabs.addTab("Dashboard", placeholder("Charts and alerts go here"));
+        tabs.addTab("Record a Report", formPanel);
+        tabs.addTab("Manage Reports", reportsPanel);
+        tabs.addTab("Dashboard", dashboardPanel);
         tabs.addTab("Disease Guidance", placeholder("Disease guidance goes here"));
+        tabs.addChangeListener(e -> {
+            if (tabs.getSelectedComponent() == reportsPanel) reportsPanel.refresh();
+            if (tabs.getSelectedComponent() == dashboardPanel) dashboardPanel.refresh();
+        });
 
         add(tabs);
         setVisible(true);
-        
     }
 
     private JPanel placeholder(String text) {

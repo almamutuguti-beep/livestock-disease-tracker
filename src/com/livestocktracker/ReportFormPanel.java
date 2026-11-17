@@ -24,8 +24,10 @@ public class ReportFormPanel extends JPanel {
     private final JTextField dateField = new JTextField(LocalDate.now().toString(), 12);
     private final JTextField countField = new JTextField(12);
     private final JTextArea notesArea = new JTextArea(4, 25);
+    private final JButton addButton = new JButton("Add Report");
 
     private Runnable onSaved;
+    private int editingId = 0; // 0 = adding a new report, otherwise the report_id being edited
 
     public ReportFormPanel() {
         setLayout(new GridBagLayout());
@@ -53,7 +55,6 @@ public class ReportFormPanel extends JPanel {
         addRow(6, "Status:", statusBox);
         addRow(7, "Notes (optional):", new JScrollPane(notesArea));
 
-        JButton addButton = new JButton("Add Report");
         JButton clearButton = new JButton("Clear");
         addButton.addActionListener(e -> saveReport());
         clearButton.addActionListener(e -> clearForm());
@@ -71,9 +72,31 @@ public class ReportFormPanel extends JPanel {
         add(Box.createVerticalGlue(), filler);
     }
 
-    /** MainGUI can pass a refresh action here later, so the reports table updates after a save. */
+    /** Called after a successful save, so other tabs can refresh. */
     public void setOnSaved(Runnable onSaved) {
         this.onSaved = onSaved;
+    }
+
+    /** Switches the form to edit mode and fills it with an existing report. */
+    public void loadForEdit(DiseaseReport r) {
+        editingId = r.getReportId();
+        selectById(diseaseBox, r.getDiseaseId());
+        selectById(regionBox, r.getRegionId());
+        typeBox.setSelectedItem(r.getLivestockType());
+        statusBox.setSelectedItem(r.getReportStatus());
+        dateField.setText(r.getReportDate().toString());
+        countField.setText(String.valueOf(r.getAffectedCount()));
+        notesArea.setText(r.getNotes() == null ? "" : r.getNotes());
+        addButton.setText("Save Changes");
+    }
+
+    private void selectById(JComboBox<ReferenceData.Item> box, int id) {
+        for (int i = 0; i < box.getItemCount(); i++) {
+            if (box.getItemAt(i).getId() == id) {
+                box.setSelectedIndex(i);
+                return;
+            }
+        }
     }
 
     private void addRow(int row, String labelText, JComponent field) {
@@ -141,7 +164,7 @@ public class ReportFormPanel extends JPanel {
         }
 
         DiseaseReport report = new DiseaseReport(
-                0,
+                editingId,
                 disease.getId(),
                 region.getId(),
                 (String) typeBox.getSelectedItem(),
@@ -153,9 +176,12 @@ public class ReportFormPanel extends JPanel {
             report.setNotes(notes);
         }
 
-        if (dao.addReport(report)) {
-            JOptionPane.showMessageDialog(this, "Report saved.", "Success", JOptionPane.INFORMATION_MESSAGE);
-            clearForm();
+        boolean editing = editingId > 0;
+        boolean ok = editing ? dao.updateReport(report) : dao.addReport(report);
+        if (ok) {
+            JOptionPane.showMessageDialog(this, editing ? "Report updated." : "Report saved.",
+                    "Success", JOptionPane.INFORMATION_MESSAGE);
+            if (!editing) clearForm();
             if (onSaved != null) onSaved.run();
         } else {
             JOptionPane.showMessageDialog(this,

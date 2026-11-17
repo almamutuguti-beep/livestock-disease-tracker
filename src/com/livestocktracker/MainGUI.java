@@ -11,7 +11,7 @@ public class MainGUI extends JFrame {
         setLocationRelativeTo(null);
 
         JTabbedPane tabs = new JTabbedPane();
-        tabs.addTab("Record a Report", placeholder("Report entry form goes here"));
+        tabs.addTab("Record a Report", new ReportFormPanel());
         tabs.addTab("Manage Reports", placeholder("Reports table goes here"));
         tabs.addTab("Dashboard", placeholder("Charts and alerts go here"));
         tabs.addTab("Disease Guidance", placeholder("Disease guidance goes here"));

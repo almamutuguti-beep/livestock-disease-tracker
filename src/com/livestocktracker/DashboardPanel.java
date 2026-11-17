@@ -25,6 +25,7 @@ public class DashboardPanel extends JPanel {
     private final JComboBox<String> viewBox = new JComboBox<>(new String[]{
             "Reports by region", "Reports by month", "Reports by livestock type"});
     private final JPanel chartHolder = new JPanel(new BorderLayout());
+    private final JPanel alertPanel = new JPanel();
 
     public DashboardPanel() {
         setLayout(new BorderLayout(10, 10));
@@ -46,7 +47,11 @@ public class DashboardPanel extends JPanel {
 
         JPanel top = new JPanel(new BorderLayout(0, 10));
         top.add(cards, BorderLayout.NORTH);
-        top.add(controls, BorderLayout.SOUTH);
+        alertPanel.setLayout(new BoxLayout(alertPanel, BoxLayout.Y_AXIS));
+        JPanel mid = new JPanel(new BorderLayout(0, 10));
+        mid.add(alertPanel, BorderLayout.NORTH);
+        mid.add(controls, BorderLayout.CENTER);
+        top.add(mid, BorderLayout.SOUTH);
 
         add(top, BorderLayout.NORTH);
         add(chartHolder, BorderLayout.CENTER);
@@ -78,7 +83,28 @@ public class DashboardPanel extends JPanel {
         totalReportsLabel.setText(String.valueOf(reports.size()));
         totalAffectedLabel.setText(String.valueOf(totalAffected));
         regionsLabel.setText(String.valueOf(regionIds.size()));
+        showAlerts();
         showChart();
+    }
+
+    private void showAlerts() {
+        alertPanel.removeAll();
+        List<String> alerts = OutbreakAlerts.check();
+        if (alerts.isEmpty()) {
+            JLabel none = new JLabel("No active outbreak alerts (rule: " + OutbreakAlerts.THRESHOLD
+                    + " reports for the same disease and region in " + OutbreakAlerts.WINDOW_DAYS + " days).");
+            none.setAlignmentX(Component.LEFT_ALIGNMENT);
+            alertPanel.add(none);
+        } else {
+            for (String a : alerts) {
+                JLabel label = new JLabel(a);
+                label.setForeground(Color.RED);
+                label.setAlignmentX(Component.LEFT_ALIGNMENT);
+                alertPanel.add(label);
+            }
+        }
+        alertPanel.revalidate();
+        alertPanel.repaint();
     }
 
     private void showChart() {
